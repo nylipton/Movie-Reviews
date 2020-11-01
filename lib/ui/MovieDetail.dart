@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:notes_app/blocs/MovieDetailBloc.dart';
 import 'package:notes_app/blocs/MovieDetailBlocProvider.dart';
 import 'package:notes_app/models/TrailerModel.dart';
+import 'package:video_player/video_player.dart';
 
 class MovieDetail extends StatefulWidget {
   final posterUrl;
@@ -33,10 +34,7 @@ class MovieDetail extends StatefulWidget {
   }
 }
 
-
-
-class MovieDetailState
-    extends State<MovieDetail> {
+class MovieDetailState extends State<MovieDetail> {
   MovieDetailBloc _bloc;
 
   final posterUrl;
@@ -45,6 +43,11 @@ class MovieDetailState
   final String title;
   final String voteAverage;
   final int movieId;
+
+  /// used to show videos
+  VideoPlayerController _playerController;
+
+  Future<void> _initializeVideoPlayerFuture;
 
   MovieDetailState({
     this.title,
@@ -56,6 +59,14 @@ class MovieDetailState
   });
 
   @override
+  void initState() {
+    _playerController = VideoPlayerController.network(
+      'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
+    );
+    _initializeVideoPlayerFuture = _playerController.initialize();
+  }
+
+  @override
   void didChangeDependencies() {
     _bloc = MovieDetailBlocProvider.of(context);
     _bloc.fetchTrailersById(movieId);
@@ -65,6 +76,7 @@ class MovieDetailState
   @override
   void dispose() {
     _bloc.dispose();
+    _playerController.dispose();
     super.dispose();
   }
 
@@ -75,8 +87,7 @@ class MovieDetailState
         top: false,
         bottom: false,
         child: NestedScrollView(
-          headerSliverBuilder: (BuildContext context,
-              bool innerBoxIsScrolled) {
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return <Widget>[
               SliverAppBar(
                 expandedHeight: 200.0,
@@ -85,9 +96,9 @@ class MovieDetailState
                 elevation: 0.0,
                 flexibleSpace: FlexibleSpaceBar(
                     background: Image.network(
-                      "https://image.tmdb.org/t/p/w500$posterUrl",
-                      fit: BoxFit.cover,
-                    )),
+                  "https://image.tmdb.org/t/p/w500$posterUrl",
+                  fit: BoxFit.cover,
+                )),
               ),
             ];
           },
@@ -104,8 +115,7 @@ class MovieDetailState
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(margin: EdgeInsets.only(top: 8.0,
-                    bottom: 8.0)),
+                Container(margin: EdgeInsets.only(top: 8.0, bottom: 8.0)),
                 Row(
                   children: <Widget>[
                     Icon(
@@ -113,8 +123,7 @@ class MovieDetailState
                       color: Colors.red,
                     ),
                     Container(
-                      margin: EdgeInsets.only(left: 1.0,
-                          right: 1.0),
+                      margin: EdgeInsets.only(left: 1.0, right: 1.0),
                     ),
                     Text(
                       voteAverage,
@@ -123,8 +132,7 @@ class MovieDetailState
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.only(left: 10.0,
-                          right: 10.0),
+                      margin: EdgeInsets.only(left: 10.0, right: 10.0),
                     ),
                     Text(
                       releaseDate,
@@ -134,11 +142,9 @@ class MovieDetailState
                     ),
                   ],
                 ),
-                Container(margin: EdgeInsets.only(top: 8.0,
-                    bottom: 8.0)),
+                Container(margin: EdgeInsets.only(top: 8.0, bottom: 8.0)),
                 Text(description),
-                Container(margin: EdgeInsets.only(top: 8.0,
-                    bottom: 8.0)),
+                Container(margin: EdgeInsets.only(top: 8.0, bottom: 8.0)),
                 Text(
                   "Trailer",
                   style: TextStyle(
@@ -146,8 +152,7 @@ class MovieDetailState
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(margin: EdgeInsets.only(top: 8.0,
-                    bottom: 8.0)),
+                Container(margin: EdgeInsets.only(top: 8.0, bottom: 8.0)),
                 StreamBuilder(
                   stream: _bloc.movieTrailers,
                   builder:
@@ -206,19 +211,61 @@ class MovieDetailState
   }
 
   trailerItem(TrailerModel data, int index) {
+    print( 'site = $data.results[index].site\n' ) ;
     return Expanded(
       child: Column(
         children: <Widget>[
-          Container(
-            margin: EdgeInsets.all(5.0),
-            height: 100.0,
-            color: Colors.grey,
-            child: Center(child: Icon(Icons.play_circle_filled)),
+          InkResponse(
+            enableFeedback: true,
+            onTap: () {
+              setState(() {
+                // If the video is playing, pause it.
+                if (_playerController.value.isPlaying) {
+                  _playerController.pause();
+                } else {
+                  // If the video is paused, play it.
+                  _playerController.play();
+                }
+              });
+            },
+            child: Stack(
+              alignment: AlignmentDirectional.center,
+              children: <Widget>[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(5.0),
+                  child: Align(
+                    widthFactor: .99,
+                    heightFactor: .99,
+                    child: FutureBuilder(
+                        future: _initializeVideoPlayerFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.done) {
+                            return AspectRatio(
+                              aspectRatio: _playerController.value.aspectRatio,
+                              child: VideoPlayer(_playerController),
+                            );
+                          } else {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                        }),
+                  ),
+                ),
+                Icon( _playerController.value.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill),
+                ],
+            ),
           ),
+
+          // Container(
+          //   margin: EdgeInsets.all(5.0),
+          //   height: 100.0,
+          //   color: Colors.grey,
+          //   child: Center(child: Icon(Icons.play_circle_filled)),
+          // ),
           Text(
             data.results[index].name,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.justify,
           ),
         ],
       ),
