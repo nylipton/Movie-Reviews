@@ -1,4 +1,3 @@
-import 'package:http/http.dart' as http;
 
 class RemoteImageInfo {
   final int albumId ;

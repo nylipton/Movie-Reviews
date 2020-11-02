@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/HomePage.dart';
 import 'package:notes_app/ui/MovieList.dart';
 
 void main() {

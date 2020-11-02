@@ -64,6 +64,7 @@ class MovieDetailState extends State<MovieDetail> {
       'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
     );
     _initializeVideoPlayerFuture = _playerController.initialize();
+    super.initState() ;
   }
 
   @override
