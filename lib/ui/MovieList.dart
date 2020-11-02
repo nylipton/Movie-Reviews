@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notes_app/blocs/MovieDetailBlocProvider.dart';
 import '../models/ItemModel.dart';
-import '../blocs/MoviesBloc.dart' as MoviesBloc;
+import '../blocs/MoviesCubit.dart';
 import 'MovieDetail.dart';
 
 class MovieList extends StatefulWidget {
@@ -10,29 +11,36 @@ class MovieList extends StatefulWidget {
 }
 
 class _MovieListState extends State<MovieList> {
+  MoviesCubit _cubit = new MoviesCubit( ) ;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Phil\'s Reviews: Popular Movies'),
-      ),
-      body: StreamBuilder(
-        stream: MoviesBloc.bloc.allMovies,
-        builder: (_, AsyncSnapshot<ItemModel> snapshot) {
-          if (snapshot.hasData) {
-            return buildList(snapshot);
-          } else if (snapshot.hasError) {
-            return Text(snapshot.error.toString());
-          }
-          return Center(child: CircularProgressIndicator());
-        },
-      ),
-    );
+        appBar: AppBar(
+          title: Text('Phil\'s Reviews: Popular Movies'),
+        ),
+        body: BlocProvider<MoviesCubit>(create: (_) => _cubit, child: buildBody()));
   }
 
-  Widget buildList(AsyncSnapshot<ItemModel> snapshot) {
+  Widget buildBody() {
+    return BlocBuilder<MoviesCubit, ItemModel>(builder: (context, state ) {
+      if( state == null )
+        return Center(child: CircularProgressIndicator());
+      else
+        return buildList(state);
+
+        // if (snapshot.hasData) {
+        //   return buildList(snapshot);
+        // } else if (snapshot.hasError) {
+        //   return Text(snapshot.error.toString());
+        // }
+        // return Center(child: CircularProgressIndicator());
+    }) ;
+  }
+
+  Widget buildList(ItemModel data) {
     return GridView.builder(
-        itemCount: snapshot.data.results.length,
+        itemCount: data.results.length,
         gridDelegate:
             new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
         itemBuilder: (BuildContext context, int index) {
@@ -40,10 +48,10 @@ class _MovieListState extends State<MovieList> {
             child: InkResponse(
               enableFeedback: true,
               child: Image.network(
-                'https://image.tmdb.org/t/p/w185${snapshot.data.results[index].poster_path}',
+                'https://image.tmdb.org/t/p/w185${data.results[index].poster_path}',
                 fit: BoxFit.cover,
               ),
-              onTap: () => openDetailPage(snapshot.data, index),
+              onTap: () => openDetailPage(data, index),
             ),
           );
         });
@@ -68,13 +76,13 @@ class _MovieListState extends State<MovieList> {
 
   @override
   void initState() {
-    super.initState();
-    MoviesBloc.bloc.fetchAllMovies();
+    super.initState( ) ;
+    _cubit.fetchAllMovies( ) ;
   }
 
   @override
   void dispose() {
-    MoviesBloc.bloc.dispose();
+    _cubit.dispose();
     super.dispose();
   }
 }
