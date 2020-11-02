@@ -1,5 +1,5 @@
-name: notes_app
-description: demo note taking app
+name: phils_movie_reviews
+description: demo of movie reviews
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -27,7 +27,6 @@ dependencies:
   flutter_bloc: ^6.0.6
   bloc: ^6.1.0
   http: ^0.12.2
-  rxdart: ^0.18.0
   equatable: ^1.2.5
 
   # used for a staggered grid layout

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/ui/MovieList.dart';
+import 'package:phils_movie_reviews/ui/MovieList.dart';
 
 void main() {
   runApp(SplashApp(

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:http/http.dart' show Client;
-import 'package:notes_app/models/TrailerModel.dart';
+import 'package:phils_movie_reviews/models/TrailerModel.dart';
 import 'dart:convert';
 import '../models/ItemModel.dart';
 
@@ -34,5 +34,9 @@ class MovieApiProvider {
     } else {
       throw Exception('Failed to load trailers');
     }
+  }
+
+  void dispose( ) {
+    client.close() ;
   }
 }

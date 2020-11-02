@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/blocs/MovieDetailBloc.dart';
-import 'package:notes_app/blocs/MovieDetailBlocProvider.dart';
-import 'package:notes_app/models/TrailerModel.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:phils_movie_reviews/blocs/MovieDetailCubit.dart';
+import 'package:phils_movie_reviews/models/TrailerModel.dart';
 import 'package:video_player/video_player.dart';
 
 class MovieDetail extends StatefulWidget {
@@ -35,7 +35,6 @@ class MovieDetail extends StatefulWidget {
 }
 
 class MovieDetailState extends State<MovieDetail> {
-  MovieDetailBloc _bloc;
 
   final posterUrl;
   final description;
@@ -69,14 +68,14 @@ class MovieDetailState extends State<MovieDetail> {
 
   @override
   void didChangeDependencies() {
-    _bloc = MovieDetailBlocProvider.of(context);
-    _bloc.fetchTrailersById(movieId);
+    // _bloc = MovieDetailBlocProvider.of(context);
+    // _bloc.fetchTrailersById(movieId);
     super.didChangeDependencies();
   }
 
   @override
   void dispose() {
-    _bloc.dispose();
+    // _bloc.dispose();
     _playerController.dispose();
     super.dispose();
   }
@@ -154,29 +153,14 @@ class MovieDetailState extends State<MovieDetail> {
                   ),
                 ),
                 Container(margin: EdgeInsets.only(top: 8.0, bottom: 8.0)),
-                StreamBuilder(
-                  stream: _bloc.movieTrailers,
-                  builder:
-                      (context, AsyncSnapshot<Future<TrailerModel>> snapshot) {
-                    if (snapshot.hasData) {
-                      return FutureBuilder(
-                        future: snapshot.data,
-                        builder: (context,
-                            AsyncSnapshot<TrailerModel> itemSnapShot) {
-                          if (itemSnapShot.hasData) {
-                            if (itemSnapShot.data.results.length > 0)
-                              return trailerLayout(itemSnapShot.data);
-                            else
-                              return noTrailer(itemSnapShot.data);
-                          } else {
-                            return Center(child: CircularProgressIndicator());
-                          }
-                        },
-                      );
-                    } else {
-                      return Center(child: CircularProgressIndicator());
+                BlocBuilder<MovieDetailCubit,TrailerModel>(
+                  builder: (_,state) {
+                    return ( state == null ) ?
+                    Center(child: CircularProgressIndicator()):
+                        ( state.results.length > 0 ) ?
+                          trailerLayout( state ):
+                          noTrailer(state);
                     }
-                  },
                 ),
               ],
             ),
@@ -212,7 +196,6 @@ class MovieDetailState extends State<MovieDetail> {
   }
 
   trailerItem(TrailerModel data, int index) {
-    print( 'site = $data.results[index].site\n' ) ;
     return Expanded(
       child: Column(
         children: <Widget>[

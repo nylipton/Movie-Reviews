@@ -1,9 +1,13 @@
-class TrailerModel {
-  int _id;
-  List<_Result> _results = [];
+import 'package:equatable/equatable.dart';
 
-  TrailerModel.fromJson(Map<String, dynamic> parsedJson) {
-    _id = parsedJson['id'];
+class TrailerModel extends Equatable{
+  final int _id;
+  final List<_Result> _results ;
+
+  TrailerModel._initialize( this._id, this._results ) ;
+
+  factory TrailerModel.fromJson(Map<String, dynamic> parsedJson) {
+    int id = parsedJson['id'];
     List<_Result> temp = [];
     // print( ( parsedJson['results'][0] as Map ).length ) ;
     for (int i = 0; i < parsedJson['results'].length; i++) {
@@ -12,34 +16,40 @@ class TrailerModel {
       temp.add(result);
     }
     print( parsedJson ) ;
-    _results = temp;
+    return TrailerModel._initialize(id, temp) ;
   }
 
   List<_Result> get results => _results;
 
   int get id => _id;
+
+  @override
+  List<Object> get props => [id,_results];
+
+  @override
+  bool get stringify => true;
 }
 
-class _Result {
-  String _id;
-  String _iso_639_1;
-  String _iso_3166_1;
-  String _key;
-  String _name;
-  String _site;
-  int _size;
-  String _type;
+class _Result extends Equatable{
+  final String _id;
+  final String _iso_639_1;
+  final String _iso_3166_1;
+  final String _key;
+  final String _name;
+  final String _site;
+  final int _size;
+  final String _type;
 
-  _Result(result) {
-    _id = result['id'];
-    _iso_639_1 = result['iso_639_1'];
-    _iso_3166_1 = result['iso_3166_1'];
-    _key = result['key'];
-    _name = result['name'];
-    _site = result['site'];
-    _size = result['size'];
-    _type = result['type'];
-  }
+  _Result(result):
+    this._id = result['id'],
+    this._iso_639_1 = result['iso_639_1'],
+  this._iso_3166_1 = result['iso_3166_1'],
+  this._key = result['key'],
+  this._name = result['name'],
+  this._site = result['site'],
+  this._size = result['size'],
+  this._type = result['type'];
+
 
   String get id => _id;
 
@@ -56,4 +66,10 @@ class _Result {
   int get size => _size;
 
   String get type => _type;
+
+  @override
+  List<Object> get props => [_id, _iso_639_1,_iso_3166_1,_key,_name,_site,_size];
+
+  @override
+  bool get stringify => true;
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:notes_app/blocs/MovieDetailBlocProvider.dart';
 import '../models/ItemModel.dart';
 import '../blocs/MoviesCubit.dart';
+import '../blocs/MovieDetailCubit.dart' ;
 import 'MovieDetail.dart';
 
 class MovieList extends StatefulWidget {
@@ -12,6 +12,7 @@ class MovieList extends StatefulWidget {
 
 class _MovieListState extends State<MovieList> {
   MoviesCubit _cubit = new MoviesCubit( ) ;
+  MovieDetailCubit _movieDetailCubit = new MovieDetailCubit( ) ;
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +29,7 @@ class _MovieListState extends State<MovieList> {
         return Center(child: CircularProgressIndicator());
       else
         return buildList(state);
-
-        // if (snapshot.hasData) {
-        //   return buildList(snapshot);
-        // } else if (snapshot.hasError) {
-        //   return Text(snapshot.error.toString());
-        // }
-        // return Center(child: CircularProgressIndicator());
+      // TODO handle errors from the Cubit
     }) ;
   }
 
@@ -48,7 +43,7 @@ class _MovieListState extends State<MovieList> {
             child: InkResponse(
               enableFeedback: true,
               child: Image.network(
-                'https://image.tmdb.org/t/p/w185${data.results[index].poster_path}',
+                'https://image.tmdb.org/t/p/w185${data.results[index].posterPath}',
                 fit: BoxFit.cover,
               ),
               onTap: () => openDetailPage(data, index),
@@ -58,16 +53,18 @@ class _MovieListState extends State<MovieList> {
   }
 
   openDetailPage(ItemModel data, int index) {
+    _movieDetailCubit.fetchTrailersById(data.results[index].id ) ;
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return MovieDetailBlocProvider(
+        return BlocProvider(
+          create: (_) => _movieDetailCubit,
             child: MovieDetail(
           title: data.results[index].title,
-          posterUrl: data.results[index].backdrop_path,
+          posterUrl: data.results[index].backdropPath,
           description: data.results[index].overview,
-          releaseDate: data.results[index].release_date,
-          voteAverage: data.results[index].vote_average.toString(),
+          releaseDate: data.results[index].releaseDate,
+          voteAverage: data.results[index].voteAverage.toString(),
           movieId: data.results[index].id,
         ));
       }),

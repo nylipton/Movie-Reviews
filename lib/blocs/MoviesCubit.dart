@@ -16,13 +16,11 @@ class MoviesCubit extends Cubit<ItemModel>{
   void fetchAllMovies() async {
     ItemModel itemModel = await _repository.fetchAllMovies();
     emit( itemModel ) ;
-    // _moviesFetcher.sink.add(itemModel);
   }
 
   /// another name for [close]
   dispose() {
+    _repository.dispose() ;
     close();
   }
 }
-
-// final MoviesBloc bloc = new MoviesBloc() ;
